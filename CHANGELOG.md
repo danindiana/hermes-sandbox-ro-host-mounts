@@ -17,3 +17,5 @@
 - Added an ls -lt / -ltr sorting hint to the workspace AGENTS.md (in context, but the model still ignored it in a live retest).
 
 - Added helpers/newest (installed at /workspace/bin/newest) and pointed AGENTS.md at it; live retest returned the correct newest files.
+
+- Restarted hermes-gateway (13:10); cronjob_tools deadlock did not recur.

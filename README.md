@@ -205,7 +205,9 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
   and the cron ticker thread imported `cron.scheduler` at the same time (`_DeadlockError`), so the agent-facing `cronjob`
   tool was not registered in that gateway process. The cron scheduler itself is unaffected (a job ran fine three minutes
   later) and both modules import cleanly standalone, so it is a startup race. It did not occur at the 10:10 start. A
-  gateway restart usually avoids it; worth reporting upstream if it recurs.
+  gateway restart usually avoids it; worth reporting upstream if it recurs. **Update:** restarted at 13:10:11; no
+  deadlock or import warnings in the new start (only the expected `No messaging platforms enabled`), so the race did
+  not recur.
 * The mask mount depends on one file path continuing to exist.
 
 ## Diagram index
