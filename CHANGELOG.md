@@ -19,3 +19,5 @@
 - Added helpers/newest (installed at /workspace/bin/newest) and pointed AGENTS.md at it; live retest returned the correct newest files.
 
 - Restarted hermes-gateway (13:10); cronjob_tools deadlock did not recur.
+
+- Tested the cronjob tool: registry check passes; live-agent paths were fabricated (CLI) or blocked by design (cron session).

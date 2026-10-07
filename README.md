@@ -208,6 +208,14 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
   gateway restart usually avoids it; worth reporting upstream if it recurs. **Update:** restarted at 13:10:11; no
   deadlock or import warnings in the new start (only the expected `No messaging platforms enabled`), so the race did
   not recur.
+* **`cronjob` tool test (what could and could not be proven).** (1) `hermes chat -t cronjob -q` and a `HERMES_INTERACTIVE=1`
+  variant: the agent made 0 tool calls and answered "No scheduled jobs found" (false; two jobs exist), i.e. fabricated.
+  (2) A one-shot cron job inside the gateway answered `CRONJOB TOOL UNAVAILABLE`, but that is by design: the cron
+  scheduler strips the `cronjob` toolset from cron-spawned agents (loop prevention) unless `cron.allow_agent_scheduling: true`.
+  (3) Deterministic check in the Hermes venv with `HERMES_GATEWAY_SESSION=1`: the tool registers as `cronjob_manage` and
+  `check_cronjob_requirements()` is `True`. Together with the clean gateway start log (no `Could not import`), the race
+  did not recur, but an end-to-end agent call from a real gateway chat session is still untested because no messaging
+  platform is enabled.
 * The mask mount depends on one file path continuing to exist.
 
 ## Diagram index
