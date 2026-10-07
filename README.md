@@ -156,6 +156,12 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
    new paths. Fix: a path-translation table in the workspace `AGENTS.md` (context Hermes loads from `/workspace`).
    Alternative not taken: also mount at the identical host paths for path parity.
 
+6. **Live test of the `AGENTS.md` fix: path fixed, answer wrong.** Asked for the 3 most recently modified files in
+   "my Downloads folder", the agent went straight to `ls -ltr /ro/Downloads` (correct path, 2 real tool calls). But
+   `-ltr` sorts oldest first, and it reported the three *oldest* files (2024-2025) as the newest; the real newest files
+   (host `ls -lt`) were modified 2026-10-07. Path translation works; command-level correctness of the local model is
+   still unreliable, so check results.
+
 ## Lessons learned
 
 * Read-only is a write-safety control. Reading is governed by *what you mount*, so mount an allowlist.
