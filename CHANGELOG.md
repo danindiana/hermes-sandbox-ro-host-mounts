@@ -7,3 +7,5 @@
 - Restarted `hermes-gateway` (user unit) so it reads the new config; removed the stale container it had created.
 - Verified the gateway path with a one-shot cron job (no messaging platform is enabled, so a chat test was impossible).
 - Published this write-up.
+
+- Investigated the cron import errors (stale-process after hermes update) and the intermittent cronjob_tools deadlock; see README open items.

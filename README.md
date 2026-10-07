@@ -172,8 +172,17 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
 ## Open items
 
 * **Rotate the API key** that sat in the masked `.env`; it was plaintext on disk and was readable until masked.
-* The gateway log also showed `Could not import tool module tools.cronjob_tools: deadlock detected` and two scheduled
-  jobs failing with `cannot import name 'is_recurring' from 'cron.constants'`. Not investigated here.
+* **Cron import errors (investigated, resolved, not caused by this change).** `cannot import name 'is_recurring' from
+  'cron.constants'` appeared only at 10:09-10:10 on 2026-10-07. A `hermes update` fast-forwarded the checkout at 10:09:27
+  while the old gateway process (started earlier) was still running: it had cached the old `cron.constants` but lazily
+  loaded the newer `scheduler_tick.py`/`unreachable_retry.py`, which import `is_recurring`. Two catch-up job runs failed
+  and were lost; systemd restarted the gateway at 10:10:25 and the error never recurred. The new `cron.constants` even
+  documents this hazard. Lesson: restart long-lived Hermes processes after `hermes update`.
+* **`tools.cronjob_tools` deadlock warning (intermittent, unresolved).** At the 12:54:31 gateway start, tool discovery
+  and the cron ticker thread imported `cron.scheduler` at the same time (`_DeadlockError`), so the agent-facing `cronjob`
+  tool was not registered in that gateway process. The cron scheduler itself is unaffected (a job ran fine three minutes
+  later) and both modules import cleanly standalone, so it is a startup race. It did not occur at the 10:10 start. A
+  gateway restart usually avoids it; worth reporting upstream if it recurs.
 * The mask mount depends on one file path continuing to exist.
 
 ## Diagram index
