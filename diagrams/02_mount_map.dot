@@ -1,0 +1,16 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="Mount map: host path to container path", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    subgraph cluster_host { label="Host (home directory)"; color="#58a6ff"; fontcolor="#58a6ff"; style="rounded";
+        h1 [label="~/Documents"]; h2 [label="~/Downloads"]; h3 [label="~/research_notes"];
+        h4 [label="~/Documents/hermes-sessions"]; h5 [label=".env file (holds API key)", color="#f85149"];
+        h6 [label="dotfile dirs, Desktop,\nPictures, Videos, Music,\nother service dirs", color="#30363d", fontcolor="#8b949e"]; }
+    subgraph cluster_c { label="Container"; color="#3fb950"; fontcolor="#3fb950"; style="rounded";
+        c1 [label="/ro/Documents  :ro", color="#3fb950"]; c2 [label="/ro/Downloads  :ro", color="#3fb950"];
+        c3 [label="/ro/research_notes  :ro", color="#3fb950"]; c4 [label="/workspace  :rw", color="#d29922"];
+        c5 [label="same path, now empty\n(/dev/null over it)", color="#bc8cff"]; }
+    h1->c1; h2->c2; h3->c3; h4->c4 [color="#d29922"]; h5->c5 [label="masked", color="#bc8cff", style=dashed];
+    h6 -> c1 [style=invis]; nomount [label="NOT mounted", shape=plaintext, fontcolor="#f0883e", style=""]; h6 -> nomount [color="#f0883e", style=dashed];
+}

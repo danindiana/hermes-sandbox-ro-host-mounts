@@ -1,0 +1,16 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="Why read-only: the sandbox can only destroy what it can write", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    agent [label="Hermes agent\n(local model, shell tool)", color="#58a6ff", fillcolor="#13294d"];
+    subgraph cluster_before { label="Before: one writable mount"; color="#f0883e"; fontcolor="#f0883e"; style="rounded";
+        ws0 [label="/workspace  (rw)\n= hermes-sessions", color="#f0883e"];
+        blind [label="rest of the host:\ninvisible to Hermes", color="#30363d"]; }
+    subgraph cluster_after { label="After: read-only views added"; color="#3fb950"; fontcolor="#3fb950"; style="rounded";
+        ws1 [label="/workspace  (rw)\nonly writable path", color="#d29922"];
+        ro [label="/ro/Documents\n/ro/Downloads\n/ro/research_notes\n(ro)", color="#3fb950", fillcolor="#1f2937"]; }
+    incident [label="earlier incident:\nrm -rf took out files", color="#f85149"];
+    agent -> ws0; agent -> blind [style=dashed]; incident -> ws0 [color="#f85149", label="write risk"];
+    agent -> ws1; agent -> ro [label="read only", color="#3fb950"];
+}

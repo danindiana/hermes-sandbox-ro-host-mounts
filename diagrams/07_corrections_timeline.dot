@@ -1,0 +1,11 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="Things that went wrong, in order", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    a [label="sudo systemctl restart\n-> unit not found", color="#d29922"]; b [label="it is a USER unit:\nsystemctl --user", color="#3fb950"];
+    c [label="first CLI test:\nfabricated output", color="#f85149"]; d [label="forced terminal toolset;\nverified from host", color="#3fb950"];
+    e [label="2nd container created by gateway\nfrom stale config", color="#f0883e"]; f [label="restart gateway,\nremove old container", color="#3fb950"];
+    g [label="gateway has no messaging\nplatform: cannot chat-test", color="#d29922"]; h [label="cron one-shot instead", color="#3fb950"];
+    a->b->c->d->e->f->g->h;
+}

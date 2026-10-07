@@ -1,0 +1,11 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="Verification: trust the host, not the model", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    t1 [label="hermes chat -q (no toolset flag)", color="#f85149"]; r1 [label="0 tool calls; output was invented\n(including a fake .ssh key)", color="#f85149"];
+    t2 [label="hermes chat -t terminal", color="#58a6ff", fillcolor="#13294d"]; r2 [label="9 real tool calls", color="#3fb950"];
+    h [label="host check: docker inspect + docker exec\nmounts rw=false; touch -> EROFS;\nworkspace writable; no dotdirs under /ro", color="#3fb950", fillcolor="#1f2937"];
+    g [label="gateway: one-shot cron job (no chat platform enabled)\nreused container; log shows -v ... /ro/...:ro", color="#39c5cf", fillcolor="#0d2e2e"];
+    t1->r1; r1->t2 [label="retry"]; t2->r2->h; h->g;
+}

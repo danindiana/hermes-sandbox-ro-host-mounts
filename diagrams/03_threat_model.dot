@@ -1,0 +1,16 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="Threat model: read-only closes writes, not exfiltration", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    inj [label="prompt injection /\nconfused local model", color="#f85149"];
+    sb [label="sandbox shell", color="#58a6ff", fillcolor="#13294d"];
+    subgraph cluster_w { label="Writes"; color="#3fb950"; fontcolor="#3fb950"; style="rounded";
+        w [label="touch/rm under /ro\nEROFS: blocked", color="#3fb950"]; }
+    subgraph cluster_r { label="Reads"; color="#d29922"; fontcolor="#d29922"; style="rounded";
+        r [label="anything mounted is readable", color="#d29922"];
+        s [label="so: mount only what is safe\n(allowlist, no dotdirs, mask secrets)", color="#bc8cff", style="filled,rounded,dashed"]; }
+    subgraph cluster_e { label="Egress"; color="#39c5cf"; fontcolor="#39c5cf"; style="rounded";
+        e [label="internet allowed;\nLAN, private, metadata blocked", color="#39c5cf", fillcolor="#0d2e2e"]; }
+    inj->sb; sb->w; sb->r; r->e [label="possible leak path", color="#f0883e"]; r->s [style=dashed];
+}

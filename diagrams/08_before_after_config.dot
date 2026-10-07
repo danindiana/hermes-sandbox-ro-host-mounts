@@ -1,0 +1,13 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="docker_volumes before and after", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    subgraph cluster_b { label="Before"; color="#8b949e"; fontcolor="#8b949e"; style="rounded";
+        b1 [label="hermes-sessions : /workspace : rw"]; b2 [label="sandbox_ssh : ~/.ssh : rw"]; }
+    subgraph cluster_a { label="After (4 lines added)"; color="#3fb950"; fontcolor="#3fb950"; style="rounded";
+        a1 [label="hermes-sessions : /workspace : rw"]; a2 [label="sandbox_ssh : ~/.ssh : rw"];
+        a3 [label="Documents : /ro/Documents : ro", color="#3fb950"]; a4 [label="Downloads : /ro/Downloads : ro", color="#3fb950"];
+        a5 [label="research_notes : /ro/research_notes : ro", color="#3fb950"]; a6 [label="/dev/null : (secret .env path) : ro", color="#bc8cff"]; }
+    b1->a1 [style=dashed]; b2->a2 [style=dashed];
+}

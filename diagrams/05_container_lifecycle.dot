@@ -1,0 +1,14 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=TB, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="Why config edits did not apply until the container was recreated", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    e [label="edit config.yaml", color="#58a6ff", fillcolor="#13294d"];
+    pc [label="container_persistent: true\nrunning container is reused", color="#d29922"];
+    cli [label="CLI: reads config at launch\nafter container removal -> new mounts", color="#3fb950"];
+    gw [label="gateway service: config loaded at start\n(old copy stayed in memory)", color="#f0883e"];
+    rs [label="systemctl --user restart hermes-gateway", color="#bc8cff"];
+    rm [label="docker rm old container", color="#bc8cff"];
+    ok [label="next shell call creates container\nwith /ro mounts", color="#3fb950"];
+    e->pc; pc->cli [label="remove container"]; pc->gw; gw->rs; rs->rm; cli->ok; rm->ok;
+}
