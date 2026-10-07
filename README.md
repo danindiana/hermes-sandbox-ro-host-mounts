@@ -162,6 +162,11 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
    (host `ls -lt`) were modified 2026-10-07. Path translation works; command-level correctness of the local model is
    still unreliable, so check results.
 
+   **Follow-up:** adding an explicit "`ls -lt` for newest, never `head` after `-ltr`" section to `AGENTS.md` did not
+   change the result. The agent's context did include the section (it quoted it back when asked), yet it ran
+   `ls -ltr ... | head -n 3` again and reported the three oldest files. Instructions in context are advisory for this
+   small local model; a deterministic helper script or a stronger model would be the real fix.
+
 ## Lessons learned
 
 * Read-only is a write-safety control. Reading is governed by *what you mount*, so mount an allowlist.

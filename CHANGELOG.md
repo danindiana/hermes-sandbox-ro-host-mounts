@@ -13,3 +13,5 @@
 - Added a /ro path-translation section to the workspace AGENTS.md after the agent looked for /home/smduck/Downloads (host path) and reported it missing.
 
 - Live-tested the AGENTS.md path fix: agent used /ro/Downloads correctly but misread ls -ltr ordering.
+
+- Added an ls -lt / -ltr sorting hint to the workspace AGENTS.md (in context, but the model still ignored it in a live retest).
