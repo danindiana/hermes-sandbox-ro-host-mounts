@@ -1,0 +1,17 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="From my Downloads folder to a correct answer: path table + sorting helper", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    u [label="user: \"3 most recent files\nin my Downloads folder?\"", color="#58a6ff", fillcolor="#13294d"];
+    subgraph cluster_bad { label="Before"; color="#f85149"; fontcolor="#f85149"; style="rounded";
+        b1 [label="agent looks in /home/<user>/Downloads\n(host path; sandbox user is pn)", color="#f85149"];
+        b2 [label="\"folder doesn't exist\"", color="#f85149"]; }
+    subgraph cluster_p { label="Fix 1: AGENTS.md path table"; color="#3fb950"; fontcolor="#3fb950"; style="rounded";
+        p1 [label="Downloads -> /ro/Downloads\nDocuments -> /ro/Documents\nresearch_notes -> /ro/research_notes", color="#3fb950"]; }
+    subgraph cluster_s { label="Fix 2: sorting in code, not prose"; color="#bc8cff"; fontcolor="#bc8cff"; style="rounded,dashed";
+        s0 [label="ls -ltr | head -n 3\n= the 3 OLDEST (model kept doing this,\neven with the rule in context)", color="#d29922"];
+        s1 [label="/workspace/bin/newest 3 /ro/Downloads\nnewest first, deterministic", color="#bc8cff", fillcolor="#13294d"]; }
+    ok [label="correct, host-verified answer", color="#3fb950", fillcolor="#1f2937"];
+    u->b1->b2; u->p1 [label="after"]; p1->s0 [style=dashed, color="#d29922", label="wrong order"]; p1->s1; s1->ok;
+}

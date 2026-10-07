@@ -1,0 +1,16 @@
+digraph g {
+    graph [bgcolor="#0d1117", rankdir=LR, fontname="Helvetica", fontcolor="#e6edf3", labelloc="t", fontsize=20, label="Cron errors: a stale process after hermes update, then a startup race", pad=0.3, nodesep=0.4, ranksep=0.6];
+    node  [fontname="Helvetica", fontcolor="#e6edf3", color="#30363d", style="filled,rounded", shape=box, penwidth=2, margin="0.25,0.18", fillcolor="#161b22"];
+    edge  [color="#8b949e", fontname="Helvetica", fontcolor="#adbac7", penwidth=1.6, arrowsize=0.9];
+
+    a [label="10:09:27\nhermes update\nfast-forwards checkout", color="#58a6ff", fillcolor="#13294d"];
+    b [label="10:09-10:10  old gateway process\nhas cached cron.constants,\nloads newer scheduler files\nImportError: is_recurring", color="#f85149"];
+    c [label="2 catch-up job runs\nfail and are lost", color="#f85149"];
+    d [label="10:10:25\nsystemd restarts gateway\n(no more ImportError)", color="#3fb950"];
+    e [label="12:54:31  gateway restart\nstartup race: _DeadlockError\non cron.scheduler\ncronjob_tools not registered", color="#d29922"];
+    f [label="12:57 test cron job\nruns fine: scheduler\nunaffected", color="#39c5cf", fillcolor="#0d2e2e"];
+    g [label="13:10:11  restart\nno deadlock, no import errors", color="#3fb950"];
+    h [label="registry check:\ncronjob_manage registered,\navailability True", color="#3fb950", fillcolor="#1f2937"];
+    n [label="note: cron-spawned agents never get\nthe cronjob tool (by design)", color="#bc8cff", style="filled,rounded,dashed"];
+    a->b->c->d->e->f->g->h; f->n [style=dashed];
+}

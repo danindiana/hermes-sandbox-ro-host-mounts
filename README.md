@@ -13,7 +13,7 @@
 ![egress](https://img.shields.io/badge/egress-filtered-f0883e?style=for-the-badge)
 ![gateway](https://img.shields.io/badge/gateway-verified%20via%20cron-39c5cf?style=for-the-badge)
 ![linux](https://img.shields.io/badge/Linux-Ubuntu%2022.04-e95420?style=for-the-badge&logo=ubuntu&logoColor=white)
-![diagrams](https://img.shields.io/badge/diagrams-8%20Graphviz-0d1117?style=for-the-badge&logo=graphviz&logoColor=white)
+![diagrams](https://img.shields.io/badge/diagrams-10%20Graphviz-0d1117?style=for-the-badge&logo=graphviz&logoColor=white)
 
 *Hermes ran its shell tool in a Docker sandbox that could see exactly one host folder. The user's real work lives in
 Documents and Downloads. This repo records how those folders were exposed read-only, why a read-only mount is not the
@@ -24,24 +24,36 @@ whole safety story, what was scanned first, what was verified from the host, and
 ---
 
 ## Table of contents
-1. [Current state](#current-state)
-2. [The question](#the-question)
-3. [Threat model](#threat-model)
-4. [What is and is not mounted](#what-is-and-is-not-mounted)
-5. [Secret scan](#secret-scan)
-6. [The change](#the-change)
-7. [Why it did not apply immediately](#why-it-did-not-apply-immediately)
-8. [Verification](#verification)
-9. [Corrections](#corrections)
-10. [Lessons learned](#lessons-learned)
-11. [Decision log](#decision-log)
-12. [Open items](#open-items)
-13. [Diagram index](#diagram-index)
-14. [Repo layout](#repo-layout)
+1. [Final state](#final-state)
+2. [Current state](#current-state)
+3. [The question](#the-question)
+4. [Threat model](#threat-model)
+5. [What is and is not mounted](#what-is-and-is-not-mounted)
+6. [Secret scan](#secret-scan)
+7. [The change](#the-change)
+8. [Why it did not apply immediately](#why-it-did-not-apply-immediately)
+9. [Verification](#verification)
+10. [Corrections](#corrections)
+11. [Helpers](#helpers)
+12. [Cron errors](#cron-errors)
+13. [Lessons learned](#lessons-learned)
+14. [Decision log](#decision-log)
+15. [Open items](#open-items)
+16. [Diagram index](#diagram-index)
+17. [Repo layout](#repo-layout)
+
+## Final state
+
+Confirmed working by the user on their running Hermes instance, 2026-10-07. Hermes's Docker sandbox now has read-only
+views of Documents, Downloads and research_notes at `/ro/*`; one secret-bearing `.env` is masked; `/workspace` is still the
+only writable path. The agent is taught the paths through the workspace `AGENTS.md`, and a small helper script
+(`helpers/newest`) does newest/oldest listings deterministically because the local model kept getting the sort order wrong.
+Two cron errors seen along the way were investigated: one was a stale process after `hermes update`, the other an
+intermittent startup race that did not recur.
 
 ## Current state
 
-Last updated 2026-10-07. Each row names its evidence.
+Last updated 2026-10-07 (final). Each row names its evidence.
 
 | Capability | Status | How verified |
 |---|---|---|
@@ -52,6 +64,11 @@ Last updated 2026-10-07. Each row names its evidence.
 | Secret-bearing `.env` hidden | verified | file reads as 0 bytes inside the container |
 | Gateway service uses the new mounts | verified | cron run reused the container; `agent.log` volume args list the three `/ro/...:ro` mounts; run output shows the write failing |
 | Chat-message test through the gateway | **not possible** | gateway log: `No messaging platforms enabled` |
+| `AGENTS.md` path table (`/home/<user>/Downloads` to `/ro/Downloads`) | live | live agent run went straight to `/ro/Downloads`; the agent quoted the section back |
+| `/workspace/bin/newest` helper | live | live agent run called it and returned the correct newest files (host `ls -lt` agrees) |
+| Gateway restarted after config change | done | 13:10:11 start, no deadlock or import warnings |
+| `cronjob_tools` deadlock | did not recur | clean start; `cronjob_manage` registers and its availability check is `True` |
+| End-to-end `cronjob` call from a real gateway chat | **untested** | no messaging platform enabled; cron sessions never get the tool by design |
 | Exposed API key rotated | **open** | not done (see [Open items](#open-items)) |
 
 ## The question
@@ -151,7 +168,7 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
    config. Restarting the gateway and removing that container fixed it.
 4. **A chat test of the gateway was impossible**, because no messaging platform is enabled. Cron was used instead.
 
-5. **The agent looked for the host path.** Asked about "Downloads", it searched `/home/smduck/Downloads` and reported
+5. **The agent looked for the host path.** Asked about "Downloads", it searched `/home/<user>/Downloads` and reported
    that the folder "doesn't exist" (sandbox user is `pn`; mounts live at `/ro/...`). Mounting does not teach the model the
    new paths. Fix: a path-translation table in the workspace `AGENTS.md` (context Hermes loads from `/workspace`).
    Alternative not taken: also mount at the identical host paths for path parity.
@@ -172,11 +189,25 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
    any newest/oldest question. Live retest: the agent ran `/workspace/bin/newest 3 /ro/Downloads` and reported the
    correct three files. Note the container clock is UTC, so times show 5 hours ahead of the host's CDT.
 
+![path resolution and helper](diagrams/09_path_resolution_and_helper.png)
+
+## Helpers
+
+* **`AGENTS.md` path table** (in the workspace, `/workspace/AGENTS.md`): maps what the user says (Downloads, `/home/<user>/Downloads`) to `/ro/Downloads` and so on, and states that `/ro` is read-only by design.
+* **`helpers/newest`** (installed as `/workspace/bin/newest`): `newest [-o] [-r] [N] [DIR]`, newest first; `-o` for the oldest, `-r` to recurse. The sort order lives in code because instructions in context were ignored by the small local model.
+
+## Cron errors
+
+![cron investigation](diagrams/10_cron_investigation.png)
+
+Details are under [Open items](#open-items): the `is_recurring` ImportError was a stale gateway process after `hermes update`; the `cronjob_tools` deadlock was an intermittent startup race.
+
 ## Lessons learned
 
 * Read-only is a write-safety control. Reading is governed by *what you mount*, so mount an allowlist.
 * A persistent container keeps its original mounts; config edits need a recreate, and every long-running process that
   caches config needs a restart.
+* After `hermes update`, restart long-lived Hermes processes (the gateway); a process that cached old modules will break on newer files.
 * A new mount is invisible to the model until its path is documented where the agent reads (here `AGENTS.md`).
 * For small local models, put correctness in a script, not in prose instructions.
 * Verify from the host. A local model asked to "run commands" may simply write plausible output.
@@ -191,6 +222,8 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
 | Exclude Desktop/Pictures/Videos/Music | not needed; less exposure |
 | Mask the `.env` instead of moving it | no change to the other project's files |
 | Recreate container immediately, restart gateway | user asked; mounts do nothing otherwise |
+| Helper script over more prompt text | the model ignored the sorting rule in context |
+| Leave `cron.allow_agent_scheduling` off | cron-spawned agents must not create more cron jobs |
 
 ## Open items
 
@@ -230,6 +263,8 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
 | 06 | [Verification flow](diagrams/06_verification_flow.png) |
 | 07 | [Corrections timeline](diagrams/07_corrections_timeline.png) |
 | 08 | [Before/after config](diagrams/08_before_after_config.png) |
+| 09 | [Path resolution and sorting helper](diagrams/09_path_resolution_and_helper.png) |
+| 10 | [Cron investigation timeline](diagrams/10_cron_investigation.png) |
 
 Re-render: `./render.sh` (needs Graphviz and `rsvg-convert` or ImageMagick).
 
