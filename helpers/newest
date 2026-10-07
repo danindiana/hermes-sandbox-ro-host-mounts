@@ -1,0 +1,14 @@
+#!/bin/sh
+# newest [-o] [-r] [N] [DIR]  -- list the N most recently modified entries of DIR (default: 5, .)
+#   -o  oldest first selection (the N OLDEST entries) instead of newest
+#   -r  recurse into subdirectories (files only)
+# Output: newest first, "YYYY-MM-DD HH:MM  SIZE  NAME". Sorting is done here so callers cannot get the order wrong.
+oldest=0; rec=0
+while getopts "or" o; do case $o in o) oldest=1;; r) rec=1;; *) echo "usage: newest [-o] [-r] [N] [DIR]" >&2; exit 2;; esac; done
+shift $((OPTIND - 1))
+n=${1:-5}; dir=${2:-.}
+case $n in ''|*[!0-9]*) echo "newest: N must be a number, got '$n'" >&2; exit 2;; esac
+[ -d "$dir" ] || { echo "newest: no such directory: $dir" >&2; exit 1; }
+if [ "$rec" = 1 ]; then set -- -type f; else set -- -mindepth 1 -maxdepth 1; fi
+if [ "$oldest" = 1 ]; then sortopt="-n"; else sortopt="-rn"; fi
+find "$dir" "$@" -printf '%T@\t%TY-%Tm-%Td %TH:%TM\t%s\t%p\n' | sort -t "$(printf '\t')" -k1,1 $sortopt | head -n "$n" | cut -f2- | tr '\t' ' ' | awk '{d=$1" "$2; s=$3; $1=$2=$3=""; sub(/^ +/,""); printf "%s  %12s  %s\n", d, s, $0}'

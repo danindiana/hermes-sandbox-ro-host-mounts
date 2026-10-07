@@ -165,7 +165,12 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
    **Follow-up:** adding an explicit "`ls -lt` for newest, never `head` after `-ltr`" section to `AGENTS.md` did not
    change the result. The agent's context did include the section (it quoted it back when asked), yet it ran
    `ls -ltr ... | head -n 3` again and reported the three oldest files. Instructions in context are advisory for this
-   small local model; a deterministic helper script or a stronger model would be the real fix.
+   small local model; a deterministic helper script or a stronger model is the real fix (see Resolution below).
+
+   **Resolution:** a helper script, [`helpers/newest`](helpers/newest) (installed as `/workspace/bin/newest`), does the
+   sorting in code: `newest [-o] [-r] [N] [DIR]`, newest first, with `-o` for oldest. `AGENTS.md` tells the agent to call it for
+   any newest/oldest question. Live retest: the agent ran `/workspace/bin/newest 3 /ro/Downloads` and reported the
+   correct three files. Note the container clock is UTC, so times show 5 hours ahead of the host's CDT.
 
 ## Lessons learned
 
@@ -173,6 +178,7 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
 * A persistent container keeps its original mounts; config edits need a recreate, and every long-running process that
   caches config needs a restart.
 * A new mount is invisible to the model until its path is documented where the agent reads (here `AGENTS.md`).
+* For small local models, put correctness in a script, not in prose instructions.
 * Verify from the host. A local model asked to "run commands" may simply write plausible output.
 * Mask known secrets in place (`/dev/null` over the file) when excluding the whole folder is too coarse.
 
@@ -223,4 +229,5 @@ Re-render: `./render.sh` (needs Graphviz and `rsvg-convert` or ImageMagick).
 README.md  RUNBOOK.md  CHANGELOG.md  config-diff.md  SESSION.md  LICENSE  render.sh
 assets/    logo.svg  logo.png
 diagrams/  NN_name.dot  .png  .svg
+helpers/   newest  (sorted-listing helper installed in the sandbox workspace)
 ```

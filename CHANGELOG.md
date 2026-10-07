@@ -15,3 +15,5 @@
 - Live-tested the AGENTS.md path fix: agent used /ro/Downloads correctly but misread ls -ltr ordering.
 
 - Added an ls -lt / -ltr sorting hint to the workspace AGENTS.md (in context, but the model still ignored it in a live retest).
+
+- Added helpers/newest (installed at /workspace/bin/newest) and pointed AGENTS.md at it; live retest returned the correct newest files.
