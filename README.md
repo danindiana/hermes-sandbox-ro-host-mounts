@@ -151,11 +151,17 @@ with the three `/ro/...:ro` volume args, and the response reported `Read-only fi
    config. Restarting the gateway and removing that container fixed it.
 4. **A chat test of the gateway was impossible**, because no messaging platform is enabled. Cron was used instead.
 
+5. **The agent looked for the host path.** Asked about "Downloads", it searched `/home/smduck/Downloads` and reported
+   that the folder "doesn't exist" (sandbox user is `pn`; mounts live at `/ro/...`). Mounting does not teach the model the
+   new paths. Fix: a path-translation table in the workspace `AGENTS.md` (context Hermes loads from `/workspace`).
+   Alternative not taken: also mount at the identical host paths for path parity.
+
 ## Lessons learned
 
 * Read-only is a write-safety control. Reading is governed by *what you mount*, so mount an allowlist.
 * A persistent container keeps its original mounts; config edits need a recreate, and every long-running process that
   caches config needs a restart.
+* A new mount is invisible to the model until its path is documented where the agent reads (here `AGENTS.md`).
 * Verify from the host. A local model asked to "run commands" may simply write plausible output.
 * Mask known secrets in place (`/dev/null` over the file) when excluding the whole folder is too coarse.
 

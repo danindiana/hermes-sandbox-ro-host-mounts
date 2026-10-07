@@ -9,3 +9,5 @@
 - Published this write-up.
 
 - Investigated the cron import errors (stale-process after hermes update) and the intermittent cronjob_tools deadlock; see README open items.
+
+- Added a /ro path-translation section to the workspace AGENTS.md after the agent looked for /home/smduck/Downloads (host path) and reported it missing.
